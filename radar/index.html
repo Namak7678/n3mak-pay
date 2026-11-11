@@ -1,0 +1,33 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>N3mak radar feed</title>
+<style>
+body{background:#07080b;color:#eef1f8;font-family:system-ui,sans-serif;margin:0;line-height:1.65}
+.wrap{max-width:860px;margin:0 auto;padding:30px 16px 70px}
+.brand{color:#22d3ee;font-weight:800;font-size:13px;letter-spacing:.6px}
+h1{font-size:25px;margin:4px 0 10px}p.muted{color:#98a2b6;font-size:14px}
+select,input{background:#12141b;color:#eef1f8;border:1px solid #232733;border-radius:9px;padding:9px 11px;font-size:14px}
+table{width:100%;border-collapse:collapse;margin-top:16px;font-size:14px}
+th{color:#22d3ee;text-align:left;border-bottom:1px solid #232733;padding:9px 8px}
+td{border-bottom:1px solid #1b1f28;padding:9px 8px;vertical-align:top}
+.btn{display:inline-block;background:#22d3ee;color:#04121a;font-weight:700;padding:11px 18px;border-radius:10px;text-decoration:none;margin-top:18px}
+</style></head><body><div class="wrap">
+<div class="brand">N3MAK RADAR</div>
+<h1>Published exposure signals</h1>
+<p class="muted">Built from leak-site victims that the groups themselves published. Filter by country code, for example US, GB, DE, AE, RU, SA, EG.</p>
+<div style="margin:14px 0"><input id="country" placeholder="country code (blank = all)" size="22"> <button class="btn" onclick="load()">Filter</button></div>
+<table><thead><tr><th>Victim</th><th>Details</th><th>Priority</th></tr></thead><tbody id="rows"><tr><td colspan="3" class="muted">loading…</td></tr></tbody></table>
+<a class="btn" href="https://t.me/N3mak_bot?start=radar_page">Get the weekly brief in Telegram</a>
+</div>
+<script>
+async function load(){
+  const c = document.getElementById("country").value.trim();
+  const u = "https://n3mak-bot-n7dx.onrender.com/api/radar?limit=60" + (c?("&country="+encodeURIComponent(c)):"");
+  try{
+    const r = await fetch(u,{cache:"no-store"}); const d = await r.json();
+    document.getElementById("rows").innerHTML = (d.signals||[]).map(s=>
+      `<tr><td>${s.title||""}</td><td>${s.detail||""}</td><td>${s.score||""}</td></tr>`).join("")
+      || `<tr><td colspan="3" class="muted">No signals for this filter yet.</td></tr>`;
+  }catch(e){document.getElementById("rows").innerHTML='<tr><td colspan="3" class="muted">Connection error.</td></tr>';}
+}
+load();
+</script></body></html>

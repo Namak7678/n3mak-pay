@@ -1,0 +1,43 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>N3mak client portal</title>
+<style>
+body{background:#07080b;color:#eef1f8;font-family:system-ui,sans-serif;margin:0;line-height:1.7}
+.wrap{max-width:720px;margin:0 auto;padding:32px 18px 70px}
+.brand{color:#22d3ee;font-weight:800;font-size:13px;letter-spacing:.6px}
+h1{font-size:25px;margin:4px 0 16px}h2{font-size:16px;color:#22d3ee;margin:24px 0 8px}
+.card{background:#12141b;border:1px solid #232733;border-radius:14px;padding:18px;margin-bottom:14px}
+.row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #1b1f28;font-size:15px}
+.row:last-child{border-bottom:0}.k{color:#98a2b6}
+.pill{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:700}
+.paid{background:rgba(52,211,153,.15);color:#34d399}.pending{background:rgba(255,106,61,.15);color:#ff6a3d}
+.muted{color:#98a2b6;font-size:13px}
+</style></head><body><div class="wrap">
+<div class="brand">N3MAK</div><h1 id="title">Client portal</h1>
+<div class="card" id="profile"></div>
+<h2>Invoices</h2><div class="card" id="invoices"><span class="muted">loading…</span></div>
+<h2>Your tools</h2>
+<div class="card"><div class="muted">Exposure check and website dossier are delivered inside the bot. Open it and type /dive or /blue, or ask for a new report here.</div></div>
+<p class="muted">Portal updates every 20 seconds from the N3mak service.</p>
+</div>
+<script>
+const id = new URLSearchParams(location.search).get("id") || "";
+const api = "https://n3mak-bot-n7dx.onrender.com/api/client/";
+async function load(){
+  if(!id){document.getElementById("title").textContent="No client id";return;}
+  try{
+    const r = await fetch(api+encodeURIComponent(id),{cache:"no-store"});
+    const d = await r.json();
+    if(!r.ok||d.error){document.getElementById("title").textContent="Client not found";return;}
+    document.getElementById("title").textContent = d.name;
+    document.getElementById("profile").innerHTML =
+      `<div class="row"><span class="k">Client code</span><span>${d.code}</span></div>
+       <div class="row"><span class="k">Plan</span><span>${d.plan||"—"}</span></div>
+       <div class="row"><span class="k">Status</span><span class="pill paid">${d.status||"active"}</span></div>
+       <div class="row"><span class="k">Client since</span><span>${(d.created||"").slice(0,10)}</span></div>`;
+    const inv = (d.invoices||[]).map(x=>`<div class="row"><span>${x.code} · ${x.product||""}</span>
+      <span>${Number(x.amount).toFixed(2)} USDC <span class="pill ${x.status==="paid"?"paid":"pending"}">${x.status}</span></span></div>`).join("");
+    document.getElementById("invoices").innerHTML = inv || `<span class="muted">No invoices yet. Ask in the bot: /invoice 900 service</span>`;
+  }catch(e){document.getElementById("title").textContent="Connection error";}
+}
+load();setInterval(load,20000);
+</script></body></html>

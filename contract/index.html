@@ -1,0 +1,44 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>N3mak contract</title>
+<style>
+body{background:#fff;color:#111;font-family:Georgia,serif;margin:0;line-height:1.75}
+.wrap{max-width:760px;margin:0 auto;padding:44px 26px 60px}
+h1{font-size:24px;letter-spacing:.5px}h2{font-size:15px;margin-top:26px;text-transform:uppercase;letter-spacing:.8px}
+table{width:100%;border-collapse:collapse;margin-top:10px}td{padding:7px 0;border-bottom:1px solid #ddd;font-size:15px}
+.k{color:#666;width:38%}ol{padding-left:20px;font-size:15px}li{margin-bottom:8px}
+.sig{display:flex;gap:40px;margin-top:46px}.sig div{flex:1;border-top:1px solid #333;padding-top:8px;font-size:13px;color:#444}
+.muted{color:#666;font-size:13px;margin-top:26px}
+@media print{.noprint{display:none}}
+button{background:#111;color:#fff;border:0;padding:10px 16px;border-radius:8px;cursor:pointer;font-size:14px}
+</style></head><body><div class="wrap">
+<button class="noprint" onclick="window.print()">Print / save as PDF</button>
+<h1>Service agreement</h1>
+<p class="muted" id="meta">loading…</p>
+<table id="facts"></table>
+<h2>Scope</h2><p id="scope">—</p>
+<h2>Terms</h2><ol id="terms"></ol>
+<h2>Signatures</h2>
+<div class="sig"><div>N3mak — authorised signature</div><div>Client — name, signature, date</div></div>
+<p class="muted">Generated automatically. Reference the invoice code in any correspondence.</p>
+</div>
+<script>
+const id = new URLSearchParams(location.search).get("id") || "";
+const api = "https://n3mak-bot-n7dx.onrender.com/api/contract/";
+async function load(){
+  try{
+    const r = await fetch(api+encodeURIComponent(id),{cache:"no-store"});
+    const d = await r.json();
+    if(!r.ok||d.error){document.getElementById("meta").textContent="Contract not found.";return;}
+    document.getElementById("meta").textContent = "Issued " + (d.issued||"").slice(0,10) + " · Invoice " + d.code + " · Status " + d.status;
+    document.getElementById("facts").innerHTML =
+      `<tr><td class="k">Provider</td><td>${d.provider}</td></tr>
+       <tr><td class="k">Service</td><td>${d.product||"—"}</td></tr>
+       <tr><td class="k">Fee</td><td>${Number(d.amount).toFixed(2)} ${d.currency}</td></tr>
+       <tr><td class="k">Payment address</td><td>${d.pay_address||"—"} (BNB Chain)</td></tr>`;
+    document.getElementById("scope").textContent =
+      `N3mak will deliver: ${d.product}. Delivery starts when the first payment is confirmed and access to the systems in scope is provided.`;
+    document.getElementById("terms").innerHTML = (d.terms||[]).map(t=>`<li>${t}</li>`).join("");
+  }catch(e){document.getElementById("meta").textContent="Connection error.";}
+}
+load();
+</script></body></html>
